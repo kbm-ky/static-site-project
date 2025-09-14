@@ -1,4 +1,5 @@
 from typing import Self, Any, Optional
+import io
 
 class HtmlNode:
     def __init__(self, 
@@ -45,3 +46,24 @@ class LeafNode(HtmlNode):
             return self.value
         
         return f'<{self.tag}{self.props_to_html()}>{self.value}</{self.tag}>'
+
+
+class ParentNode(HtmlNode):
+    def __init__(self, tag: str, children: list[HtmlNode], props: Optional[dict[str,str]]=None):
+        super().__init__(tag, None, children, props)
+
+    def to_html(self) -> str:
+        if self.tag is None:
+            raise ValueError('missing tag!')
+        
+        if self.children is None:
+            raise ValueError('missing children!')
+        
+        builder = io.StringIO()
+        builder.write(f'<{self.tag}{self.props_to_html()}>')
+
+        for child in self.children:
+            builder.write(child.to_html())
+
+        builder.write(f'</{self.tag}>')
+        return builder.getvalue()
