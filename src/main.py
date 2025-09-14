@@ -1,7 +1,7 @@
-from textnode import TextNode, Bender
+from textnode import TextNode, TextType
 
 def main():
-    node = TextNode('This is some anchor text', Bender.AIR_BENDER, 'http://www.boot.dev')
+    node = TextNode('This is some anchor text', TextType.LINK, 'http://www.boot.dev')
     print(node)
 
 
