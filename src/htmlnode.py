@@ -30,7 +30,7 @@ class HtmlNode:
 
 
 class LeafNode(HtmlNode):
-    def __init__(self, tag: str, value: str, props: Optional[dict[str, str]]=None):
+    def __init__(self, tag: Optional[str], value: str, props: Optional[dict[str, str]]=None):
         super().__init__(tag, value, None, props)
 
 
@@ -38,12 +38,16 @@ class LeafNode(HtmlNode):
         if self.value is None:
             raise ValueError('value is None')
         
-        if self.value.strip() == '':
-            raise ValueError('value is empty')
+#        if self.value.strip() == '':
+#            raise ValueError('value is empty')
 
         # raw text
         if self.tag == None:
             return self.value
+
+        #img
+        if self.tag == 'img':
+            return f'<img{self.props_to_html()}>'
         
         return f'<{self.tag}{self.props_to_html()}>{self.value}</{self.tag}>'
 
