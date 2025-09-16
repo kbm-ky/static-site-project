@@ -2,7 +2,13 @@ import unittest
 
 from htmlnode import HtmlNode, LeafNode, ParentNode
 from textnode import TextNode, TextType
-from functions import text_node_to_html_node, split_nodes_delimiter
+from functions import (
+    text_node_to_html_node, 
+    split_nodes_delimiter,
+    extract_markdown_images,
+    extract_markdown_links,
+)
+                    
 
 class TestTextToHtml(unittest.TestCase):
     def test_text(self):
@@ -111,6 +117,38 @@ class TestNodeSplitter(unittest.TestCase):
         self.assertEqual(expect, actual)
 
 
+class TestExtractImages(unittest.TestCase):
+    def test_single(self):
+        s = '![rick roll](https://i.imgur.com/aKaOqIh.gif)'
+        expect = [('rick roll', 'https://i.imgur.com/aKaOqIh.gif')]
+        actual = extract_markdown_images(s)
+        self.assertListEqual(expect, actual)
+
+
+    def test_multi(self):
+        s = 'This is text with a ![rick roll](https://i.imgur.com/aKaOqIh.gif) and ![obi wan](https://i.imgur.com/fJRm4Vk.jpeg)'
+        expect = [
+            ('rick roll', 'https://i.imgur.com/aKaOqIh.gif'),
+            ('obi wan', 'https://i.imgur.com/fJRm4Vk.jpeg'), 
+        ]
+        actual = extract_markdown_images(s)
+        self.assertListEqual(expect, actual)
+
+class TestExtractMarkdownLinks(unittest.TestCase):
+    def test_single(self):
+        s = '[to boot dev](https://www.boot.dev)'
+        expect = [('to boot dev', 'https://www.boot.dev')]
+        actual = extract_markdown_links(s)
+        self.assertListEqual(expect, actual)
+
+    def test_multi(self):
+        s = 'text = "This is text with a link [to boot dev](https://www.boot.dev) and [to youtube](https://www.youtube.com/@bootdotdev)'
+        expect = [
+            ('to boot dev', 'https://www.boot.dev'),
+            ('to youtube', 'https://www.youtube.com/@bootdotdev'), 
+        ]
+        actual = extract_markdown_links(s)
+        self.assertListEqual(expect, actual)
 
 if __name__ == "__main__":
     unittest.main()
