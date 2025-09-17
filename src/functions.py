@@ -33,6 +33,7 @@ def split_nodes_delimiter(old_nodes: list[TextNode], delimiter: str, text_type: 
     for node in old_nodes:
         if node.text_type != TextType.TEXT:
             new_nodes.append(node)
+            continue
 
         text = node.text
         if text == '':
@@ -64,3 +65,64 @@ def extract_markdown_links(text: str) -> list[tuple[str,str]]:
     pattern = r'(?<!\!)\[([^\n\[\]]*)\]\(([^\n\(\)]*)\)'
     matches = re.findall(pattern, text)
     return matches
+
+def split_nodes_image(old_nodes: list[TextNode]) -> list[TextNode]:
+    new_nodes = []
+
+    for node in old_nodes:
+        if node.text_type != TextType.TEXT:
+            new_nodes.append(node)
+            continue
+
+        text = node.text
+        #extract images
+        images = extract_markdown_images(text)
+        for alt, url in images:
+            image = f'![{alt}]({url})'
+            image_node = TextNode(alt, TextType.IMAGE, url)
+            #split on image
+            t = text.split(image, maxsplit=1)
+            if len(t) == 2:
+                text_node = TextNode(t[0], TextType.TEXT)
+                new_nodes.append(text_node)
+                new_nodes.append(image_node)
+                text = t[1]
+            else:
+                raise Exception('can I get here?')
+
+        if len(text) > 0:
+            new_node = TextNode(text, TextType.TEXT)
+            new_nodes.append(new_node)
+
+    return new_nodes
+
+
+def split_nodes_link(old_nodes: list[TextNode]) -> list[TextNode]:
+    new_nodes = []
+
+    for node in old_nodes:
+        if node.text_type != TextType.TEXT:
+            new_nodes.append(node)
+            continue
+
+        text = node.text
+        #extract links
+        links = extract_markdown_links(text)
+        for alt, url in links:
+            link = f'[{alt}]({url})'
+            link_node = TextNode(alt, TextType.LINK, url)
+            #split on link
+            t = text.split(link, maxsplit=1)
+            if len(t) == 2:
+                text_node = TextNode(t[0], TextType.TEXT)
+                new_nodes.append(text_node)
+                new_nodes.append(link_node)
+                text = t[1]
+            else:
+                raise Exception('can I get here?')
+
+        if len(text) > 0:
+            new_node = TextNode(text, TextType.TEXT)
+            new_nodes.append(new_node)
+
+    return new_nodes

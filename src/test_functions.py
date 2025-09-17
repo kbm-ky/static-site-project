@@ -7,6 +7,8 @@ from functions import (
     split_nodes_delimiter,
     extract_markdown_images,
     extract_markdown_links,
+    split_nodes_image,
+    split_nodes_link,
 )
                     
 
@@ -149,6 +151,59 @@ class TestExtractMarkdownLinks(unittest.TestCase):
         ]
         actual = extract_markdown_links(s)
         self.assertListEqual(expect, actual)
+
+class TestSplitImages(unittest.TestCase):
+
+    def test_split_images(self):
+
+        node = TextNode(
+            "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png) and another ![second image](https://i.imgur.com/3elNhQu.png) ",
+            TextType.TEXT,
+        )
+        new_nodes = split_nodes_image([node])
+        self.assertListEqual(
+            [
+                TextNode("This is text with an ", TextType.TEXT),
+                TextNode("image", TextType.IMAGE, "https://i.imgur.com/zjjcJKZ.png"),
+                TextNode(" and another ", TextType.TEXT),
+                TextNode(
+                    "second image", TextType.IMAGE, "https://i.imgur.com/3elNhQu.png"
+                ),
+                TextNode(" ", TextType.TEXT)
+            ],
+            new_nodes,
+        )
+
+
+class TestSplitLinks(unittest.TestCase):
+
+    def test_split_links(self):
+
+        nodes =[
+             TextNode(
+            "This is text with an [link](https://i.imgur.com/zjjcJKZ.png) and another [second link](https://i.imgur.com/3elNhQu.png) ",
+            TextType.TEXT,),
+            TextNode('link2.5', TextType.LINK, 'https://www.google.com'),
+            TextNode('Why not a third? [link3](https://www.yahoo.com) eh?', TextType.TEXT)
+        ]
+        new_nodes = split_nodes_link(nodes)
+        self.assertListEqual(
+            [
+                TextNode("This is text with an ", TextType.TEXT),
+                TextNode("link", TextType.LINK, "https://i.imgur.com/zjjcJKZ.png"),
+                TextNode(" and another ", TextType.TEXT),
+                TextNode(
+                    "second link", TextType.LINK, "https://i.imgur.com/3elNhQu.png"
+                ),
+                TextNode(" ", TextType.TEXT),
+                TextNode('link2.5', TextType.LINK, 'https://www.google.com'),
+                TextNode('Why not a third? ', TextType.TEXT),
+                TextNode('link3', TextType.LINK, 'https://www.yahoo.com'),
+                TextNode(' eh?', TextType.TEXT),
+            ],
+            new_nodes,
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
