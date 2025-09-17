@@ -136,3 +136,13 @@ def text_to_textnodes(text: str) -> list[TextNode]:
     nodes = split_nodes_link(nodes)
 
     return nodes
+
+def markdown_to_blocks(text: str) -> list[str]:
+    blocks = []
+    split_blocks = text.split('\n\n')
+    for split_block in split_blocks:
+        tmp = split_block.strip()
+        if len(tmp) > 0:
+            blocks.append(tmp)
+
+    return blocks
