@@ -11,6 +11,8 @@ from functions import (
     split_nodes_link,
     text_to_textnodes,
     markdown_to_blocks,
+    block_to_block_type,
+    BlockType,
 )
                     
 
@@ -245,6 +247,63 @@ This is the same paragraph on a new line
                 "- This is a list\n- with items",
             ],
         )
+
+    def test_heading_block_type(self):
+        tests = (
+            "# Hello",
+            "## World",
+            "### A",
+            "#### B",
+            "##### Five",
+            "###### Six",
+        )
+        expect = BlockType.HEADING
+        for test in tests:
+            actual = block_to_block_type(test)
+            self.assertEqual(expect, actual)
+
+    def test_code_block_type(self):
+        tests = (
+            "``` Hello ```",
+        )
+        expect = BlockType.CODE
+        for test in tests:
+            actual = block_to_block_type(test)
+            self.assertEqual(expect, actual)
+
+    def test_quote_block_type(self):
+        tests = (
+           r"""> Hello
+> More stuff
+> More lines""",
+        )
+        expect = BlockType.QUOTE
+        for test in tests:
+            actual = block_to_block_type(test)
+            self.assertEqual(expect, actual)
+
+    def test_unordered_block_type(self):
+        tests = (
+           r"""- Hello
+- More stuff
+- More lines""",
+        )
+        expect = BlockType.UNORDERED_LIST
+        for test in tests:
+            actual = block_to_block_type(test)
+            self.assertEqual(expect, actual)
+
+    def test_ordered_block_type(self):
+        tests = (
+           r"""1. Hello
+2. More stuff
+3. More lines""",
+        )
+        expect = BlockType.ORDERED_LIST
+        for test in tests:
+            actual = block_to_block_type(test)
+            self.assertEqual(expect, actual)
+
 
 if __name__ == "__main__":
     unittest.main()

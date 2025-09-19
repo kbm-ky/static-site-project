@@ -1,4 +1,5 @@
 import re
+from enum import Enum
 
 from textnode import TextNode, TextType
 from htmlnode import HtmlNode, ParentNode, LeafNode
@@ -146,3 +147,49 @@ def markdown_to_blocks(text: str) -> list[str]:
             blocks.append(tmp)
 
     return blocks
+
+
+class BlockType(Enum):
+    PARAGRAPH = "paragraph"
+    HEADING = "heading"
+    CODE = "code"
+    QUOTE = "quote"
+    UNORDERED_LIST = "unordered_list"
+    ORDERED_LIST = "ordered_list"
+
+
+def block_to_block_type(block: str) -> BlockType:
+    HEADING_PATTERN = r'(?<!#)#{1,6} \w+'
+    CODE_PATTERN = r'^```[^`].*[^`]```$'
+
+    if re.match(HEADING_PATTERN, block):
+        return BlockType.HEADING
+    elif re.match(CODE_PATTERN, block):
+        return BlockType.CODE
+    elif match_quote_block(block):
+        return BlockType.QUOTE
+    elif match_unordered_list_block(block):
+        return BlockType.UNORDERED_LIST
+    elif match_ordered_list_block(block):
+        return BlockType.ORDERED_LIST
+    else:
+        return BlockType.PARAGRAPH
+
+
+def match_quote_block(block: str) -> bool:
+    for line in block.splitlines():
+        if not line.startswith('>'):
+            return False
+    return True
+
+def match_unordered_list_block(block: str) -> bool:
+    for line in block.splitlines():
+        if not line.startswith('- '):
+            return False
+    return True
+
+def match_ordered_list_block(block: str) -> bool:
+    for ii, line in enumerate(block.splitlines()):
+        if not line.startswith(f'{ii+1}. '):
+            return False
+    return True
