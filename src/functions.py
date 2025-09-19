@@ -164,7 +164,7 @@ def block_to_block_type(block: str) -> BlockType:
 
     if re.match(HEADING_PATTERN, block):
         return BlockType.HEADING
-    elif re.match(CODE_PATTERN, block):
+    elif re.match(CODE_PATTERN, block, re.DOTALL):
         return BlockType.CODE
     elif match_quote_block(block):
         return BlockType.QUOTE
@@ -193,3 +193,79 @@ def match_ordered_list_block(block: str) -> bool:
         if not line.startswith(f'{ii+1}. '):
             return False
     return True
+
+def markdown_to_html_node(markdown: str) -> HtmlNode:
+    blocks = markdown_to_blocks(markdown)
+    nodes = []
+    for block in blocks:
+        block_type = block_to_block_type(block)
+        if block_type == BlockType.PARAGRAPH:
+            node = paragraph_to_node(block)
+        elif block_type == BlockType.HEADING:
+            node = heading_to_node(block)
+        elif block_type == BlockType.CODE:
+            node = code_to_node(block)
+        elif block_type == BlockType.QUOTE:
+            node = quote_to_node(block)
+        elif block_type == BlockType.UNORDERED_LIST:
+            node = unordered_to_node(block)
+        elif block_type == BlockType.ORDERED_LIST:
+            node = ordered_to_node(block)
+        
+        nodes.append(node)
+
+    return ParentNode('div', nodes)
+
+def text_to_children(text: str) -> list[HtmlNode]:
+    text_nodes = text_to_textnodes(text)
+    html_nodes = []
+    for text_node in text_nodes:
+        html_node = text_node_to_html_node(text_node)
+        html_nodes.append(html_node)
+    
+    return html_nodes
+
+def paragraph_to_node(block: str) -> HtmlNode:
+    nodes = text_to_children(block)
+    return ParentNode('p', nodes)
+
+def code_to_node(block: str) -> HtmlNode:
+    cleaned = block.removeprefix('```').removesuffix('```').lstrip()
+    code = LeafNode('code', cleaned)
+    return ParentNode('pre', [code])
+
+def quote_to_node(block: str) -> HtmlNode:
+
+    lines = [line.removeprefix('> ') for line in block.splitlines(True)]
+    new_block = "".join(lines)
+    nodes = text_to_children(new_block)
+    return ParentNode('blockquote', nodes)
+
+def heading_to_node(block: str) -> HtmlNode:
+    cleaned = block.lstrip()
+    for ii in range(0, len(cleaned)):
+        if cleaned[ii] != '#':
+            break
+    nodes = text_to_children(cleaned[ii:].strip())
+    heading_num = ii
+    return ParentNode(f'h{heading_num}', nodes)
+
+def unordered_to_node(block: str) -> HtmlNode:
+    lines = [line.removeprefix('- ').rstrip() for line in block.splitlines()]
+    nodes = []
+    for line in lines:
+        children = text_to_children(line)
+        node = ParentNode('li', children)
+        nodes.append(node)
+
+    return ParentNode('ul', nodes)
+
+def ordered_to_node(block: str) -> HtmlNode:
+    lines = [line.split(' ',maxsplit=1)[1].rstrip() for line in block.splitlines()]
+    nodes = []
+    for line in lines:
+        children = text_to_children(line)
+        node = ParentNode('li', children)
+        nodes.append(node)
+
+    return ParentNode('ol', nodes)

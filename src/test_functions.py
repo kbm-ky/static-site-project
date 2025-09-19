@@ -13,6 +13,7 @@ from functions import (
     markdown_to_blocks,
     block_to_block_type,
     BlockType,
+    markdown_to_html_node,
 )
                     
 
@@ -265,6 +266,10 @@ This is the same paragraph on a new line
     def test_code_block_type(self):
         tests = (
             "``` Hello ```",
+            """```
+This is text that _should_ remain
+the **same** even with inline stuff
+```""",
         )
         expect = BlockType.CODE
         for test in tests:
@@ -304,6 +309,110 @@ This is the same paragraph on a new line
             actual = block_to_block_type(test)
             self.assertEqual(expect, actual)
 
+class TestMarkdownToHtmlI(unittest.TestCase):
+
+    def test_paragraphs(self):
+        md = """
+This is **bolded** paragraph
+text in a p
+tag here
+
+This is another paragraph with _italic_ text and `code` here
+
+"""
+
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        expect = "<div><p>This is <b>bolded</b> paragraph\ntext in a p\ntag here</p><p>This is another paragraph with <i>italic</i> text and <code>code</code> here</p></div>"
+        # print(expect)
+        # print(html)
+        self.assertEqual(
+            expect,
+            html
+        )
+
+    def test_codeblock(self):
+        md = """
+```
+This is text that _should_ remain
+the **same** even with inline stuff
+```
+"""
+
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+
+        # print()
+        # print(html)
+        expect = "<div><pre><code>This is text that _should_ remain\nthe **same** even with inline stuff\n</code></pre></div>"
+        # print(expect)
+        self.assertEqual(
+            html,
+            expect
+        )
+
+    def test_quoteblock(self):
+        md = """> This is block quoted
+> **text**
+"""
+
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+
+        # print()
+        # print(html)
+        expect = "<div><blockquote>This is block quoted\n<b>text</b></blockquote></div>"
+        # print(expect)
+        self.assertEqual(
+            html,
+            expect
+        )
+
+    def test_heading(self):
+        md = "# H1"
+        tests = (
+            ('# H1', '<div><h1>H1</h1></div>'),
+            ('## H2', '<div><h2>H2</h2></div>'),
+            ('### H3', '<div><h3>H3</h3></div>'),
+            ('#### H4', '<div><h4>H4</h4></div>'),
+            ('##### H5', '<div><h5>H5</h5></div>'),
+            ('###### H6', '<div><h6>H6</h6></div>'),
+        )
+
+        for test in tests:
+            node = markdown_to_html_node(test[0])
+            html = node.to_html()
+            expect = test[1]
+            self.assertEqual(
+                html,
+                expect
+            )    
+
+    def test_unordered(self):
+        md = """- One
+- Two
+- Three"""
+
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        expect = '<div><ul><li>One</li><li>Two</li><li>Three</li></ul></div>'
+        self.assertEqual(
+            html,
+            expect
+        )    
+
+    def test_unordered(self):
+        md = """1. One
+2. Two
+3. Three"""
+
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        expect = '<div><ol><li>One</li><li>Two</li><li>Three</li></ol></div>'
+        self.assertEqual(
+            html,
+            expect
+        )    
 
 if __name__ == "__main__":
     unittest.main()
