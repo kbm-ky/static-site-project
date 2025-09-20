@@ -6,7 +6,8 @@ from functions import markdown_to_html_node, extract_title
 
 def main():
     copy_tree('./public', './static')
-    generate_page('content/index.md', 'template.html', 'public/index.html')
+    # generate_page('content/index.md', 'template.html', 'public/index.html')
+    generate_pages_recursive('content', 'template.html', 'public')
 
 def generate_page(from_path: str, template_path: str, dest_path: str):
     print(f'Generating page from {from_path} to {dest_path} using {template_path}')
@@ -30,6 +31,21 @@ def generate_page(from_path: str, template_path: str, dest_path: str):
     with open(dest_path, 'wt') as f:
         f.write(new_content)
 
+def generate_pages_recursive(dir_path_content: str, template_path: str, dest_dir_path: str):
+
+    listing = os.listdir(dir_path_content)
+    # print(listing)
+    for item in listing:
+        path = os.path.join(dir_path_content, item)
+
+        if os.path.isfile(path) and path.endswith('.md'):
+            new_name = item.removesuffix('.md') + '.html'
+            dst = os.path.join(dest_dir_path, new_name)
+            generate_page(path, template_path, dst)
+            print(f'{path} should be processed -> {dst}')
+        elif os.path.isdir(path):
+            new_dest_dir_path = os.path.join(dest_dir_path, item)
+            generate_pages_recursive(path, template_path, new_dest_dir_path)
 
 # Copies src to dst, deleting dst if it exists
 def copy_tree(dst: str, src: str):
