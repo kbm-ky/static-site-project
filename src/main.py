@@ -2,8 +2,34 @@ import os
 import os.path
 import shutil
 
+from functions import markdown_to_html_node, extract_title
+
 def main():
     copy_tree('./public', './static')
+    generate_page('content/index.md', 'template.html', 'public/index.html')
+
+def generate_page(from_path: str, template_path: str, dest_path: str):
+    print(f'Generating page from {from_path} to {dest_path} using {template_path}')
+
+    with open(from_path, 'rt') as f:
+        markdown = f.read()
+
+    with open(template_path, 'rt') as f:
+        template = f.read()
+
+    html_content = markdown_to_html_node(markdown).to_html()
+
+    title = extract_title(markdown)
+
+    new_content = template.replace('{{ Title }}', title).replace('{{ Content }}', html_content)
+
+    dir_part = os.path.split(dest_path)[0]
+    if not os.path.exists(dir_part):
+        os.makedirs(dir_part)
+
+    with open(dest_path, 'wt') as f:
+        f.write(new_content)
+
 
 # Copies src to dst, deleting dst if it exists
 def copy_tree(dst: str, src: str):

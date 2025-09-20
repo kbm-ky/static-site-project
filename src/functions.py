@@ -236,7 +236,7 @@ def code_to_node(block: str) -> HtmlNode:
 
 def quote_to_node(block: str) -> HtmlNode:
 
-    lines = [line.removeprefix('> ') for line in block.splitlines(True)]
+    lines = [line.removeprefix('>').removeprefix(' ') for line in block.splitlines(True)]
     new_block = "".join(lines)
     nodes = text_to_children(new_block)
     return ParentNode('blockquote', nodes)
@@ -269,3 +269,11 @@ def ordered_to_node(block: str) -> HtmlNode:
         nodes.append(node)
 
     return ParentNode('ol', nodes)
+
+def extract_title(markdown: str) -> str:
+    for line in markdown.splitlines():
+        m = re.match(r'# (\w.*)', line)
+        if m:
+            return m.groups()[0].strip()
+        
+    raise Exception('could not find h1 header!')

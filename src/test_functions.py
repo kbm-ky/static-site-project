@@ -14,6 +14,7 @@ from functions import (
     block_to_block_type,
     BlockType,
     markdown_to_html_node,
+    extract_title
 )
                     
 
@@ -354,6 +355,8 @@ the **same** even with inline stuff
     def test_quoteblock(self):
         md = """> This is block quoted
 > **text**
+>
+> --Anonymous
 """
 
         node = markdown_to_html_node(md)
@@ -361,7 +364,7 @@ the **same** even with inline stuff
 
         # print()
         # print(html)
-        expect = "<div><blockquote>This is block quoted\n<b>text</b></blockquote></div>"
+        expect = "<div><blockquote>This is block quoted\n<b>text</b>\n\n--Anonymous</blockquote></div>"
         # print(expect)
         self.assertEqual(
             html,
@@ -413,6 +416,14 @@ the **same** even with inline stuff
             html,
             expect
         )    
+
+class TestGenerationFx(unittest.TestCase):
+    def test_extract_title(self):
+        md = '# title'
+        expect = 'title'
+
+        actual = extract_title(md)
+        self.assertEqual(expect, actual)
 
 if __name__ == "__main__":
     unittest.main()
